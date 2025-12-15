@@ -276,14 +276,44 @@ class MainWindow(QMainWindow):
         """Open a screen in a new tab"""
         logger.info(f'فتح شاشة: {screen_id}')
         
-        # TODO: Implement screen loading
-        placeholder = QWidget()
-        layout = QVBoxLayout(placeholder)
-        label = QLabel(f'قيد التطوير - Under Development\n\nScreen: {screen_id}')
-        label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(label)
+        # Check if screen is already open
+        for i in range(self.tab_widget.count()):
+            widget = self.tab_widget.widget(i)
+            if hasattr(widget, 'screen_id') and widget.screen_id == screen_id:
+                self.tab_widget.setCurrentIndex(i)
+                return
         
-        self.add_tab(placeholder, f'{screen_id}')
+        # Create screen widget based on screen_id
+        widget = None
+        title = screen_id
+        
+        try:
+            if screen_id == 'items':
+                from ui.masters.items_screen import ItemsScreen
+                widget = ItemsScreen(self.current_company_id, self)
+                title = 'الأصناف / Items'
+            # TODO: Add other screens
+            else:
+                # Placeholder for unimplemented screens
+                placeholder = QWidget()
+                layout = QVBoxLayout(placeholder)
+                label = QLabel(f'قيد التطوير - Under Development\n\nScreen: {screen_id}')
+                label.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label)
+                widget = placeholder
+                title = f'{screen_id}'
+            
+            if widget:
+                widget.screen_id = screen_id
+                self.add_tab(widget, title)
+                
+        except Exception as e:
+            logger.error(f'Error opening screen {screen_id}: {str(e)}', exc_info=True)
+            QMessageBox.critical(
+                self,
+                'خطأ / Error',
+                f'خطأ في فتح الشاشة\nError opening screen:\n{str(e)}'
+            )
         
     def on_nav_item_clicked(self, item):
         """Handle navigation item click"""
