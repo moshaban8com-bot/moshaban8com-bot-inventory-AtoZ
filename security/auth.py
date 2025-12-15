@@ -102,12 +102,21 @@ class AuthService:
             session.commit()
             
             # Set current session
+            # Store user id instead of user object to avoid detached instance issues
             self.current_user = user
+            self.current_user_id = user.id
             self.session_start = datetime.utcnow()
             
-            # Refresh user object to avoid detached instance
-            session.refresh(user)
-            return user
+            # Create a detached copy of user data
+            user_copy = User(
+                id=user.id,
+                username=user.username,
+                full_name_ar=user.full_name_ar,
+                full_name_en=user.full_name_en,
+                is_admin=user.is_admin
+            )
+            
+            return user_copy
     
     def _log_failed_login(self, session, username: str, ip_address: str, reason: str):
         """Log failed login attempt"""
@@ -124,7 +133,7 @@ class AuthService:
         if self.current_user:
             with session_scope() as session:
                 audit = AuditLog(
-                    user_id=self.current_user.id,
+                    user_id=self.current_user_id,
                     company_id=self.current_company_id,
                     action='LOGOUT',
                     description='تسجيل خروج'
@@ -132,6 +141,7 @@ class AuthService:
                 session.add(audit)
         
         self.current_user = None
+        self.current_user_id = None
         self.current_company_id = None
         self.current_warehouse_id = None
         self.session_start = None
@@ -146,7 +156,7 @@ class AuthService:
         
         with session_scope() as session:
             audit = AuditLog(
-                user_id=self.current_user.id,
+                user_id=self.current_user_id,
                 company_id=company_id,
                 action='COMPANY_CHANGE',
                 description=f'تغيير الشركة الحالية إلى {company_id}'
@@ -163,7 +173,7 @@ class AuthService:
         
         with session_scope() as session:
             audit = AuditLog(
-                user_id=self.current_user.id,
+                user_id=self.current_user_id,
                 company_id=self.current_company_id,
                 action='WAREHOUSE_CHANGE',
                 description=f'تغيير المخزن الحالي إلى {warehouse_id}'
