@@ -292,6 +292,14 @@ class MainWindow(QMainWindow):
                 from ui.masters.items_screen import ItemsScreen
                 widget = ItemsScreen(self.current_company_id, self)
                 title = 'الأصناف / Items'
+            elif screen_id == 'grn':
+                from ui.documents.grn_receipt import GRNReceiptScreen
+                widget = GRNReceiptScreen(self.current_company_id, self.current_warehouse_id, self)
+                title = 'استلام بضاعة / GRN Receipt'
+            elif screen_id == 'reports':
+                from ui.reports.reports_center import ReportsCenterScreen
+                widget = ReportsCenterScreen(self.current_company_id, self.current_warehouse_id, self)
+                title = 'مركز التقارير / Reports Center'
             # TODO: Add other screens
             else:
                 # Placeholder for unimplemented screens
