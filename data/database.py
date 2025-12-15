@@ -65,7 +65,9 @@ def session_scope():
 
 def create_all_tables():
     """Create all database tables"""
-    from data import models  # Import all models
+    # Import all models to register them with Base.metadata
+    # Import here to avoid circular dependency at module level
+    from data import models, documents, security, policies
     Base.metadata.create_all(get_engine())
 
 

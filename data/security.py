@@ -161,7 +161,7 @@ class AuditLog(Base):
     
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'))  # Nullable for failed logins
     company_id = Column(Integer, ForeignKey('companies.id'))
     
     # Action details

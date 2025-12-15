@@ -4,6 +4,8 @@ PyInstaller spec file for Inventory Management System
 ملف تكوين PyInstaller
 """
 
+import os
+
 block_cipher = None
 
 a = Analysis(
