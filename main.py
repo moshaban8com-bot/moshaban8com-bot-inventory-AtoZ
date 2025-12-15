@@ -9,6 +9,10 @@ from PySide6.QtCore import Qt
 
 from config import APP_CONFIG
 from utils.logging import setup_logging, get_logger
+from ui.styles.rtl_support import setup_rtl, load_theme
+from ui.login_dialog import LoginDialog
+from ui.company_selector import CompanySelectorDialog
+from ui.main_window import MainWindow
 
 
 logger = get_logger('main')
@@ -27,32 +31,45 @@ def main():
     app.setApplicationName(APP_CONFIG['name'])
     app.setApplicationVersion(APP_CONFIG['version'])
     
-    # Set RTL layout if configured
-    if APP_CONFIG['rtl']:
-        app.setLayoutDirection(Qt.RightToLeft)
+    # Setup RTL support
+    setup_rtl(app)
     
     # Set application style
     app.setStyle('Fusion')
     
-    # TODO: Load and apply stylesheet
-    # TODO: Create and show login window
+    # Load and apply stylesheet (dark theme by default)
+    stylesheet = load_theme('dark')
+    app.setStyleSheet(stylesheet)
     
-    # Show temporary message
-    msg = QMessageBox()
-    msg.setWindowTitle(APP_CONFIG['name'])
-    msg.setText('مرحباً بكم في نظام إدارة المخزون\n\n'
-                'Welcome to Inventory Management System\n\n'
-                'النظام قيد التطوير - System Under Development')
-    msg.setInformativeText(
-        'لإنشاء البيانات التجريبية، قم بتشغيل:\n'
-        'To create demo data, run:\n\n'
-        'python -m data.seed'
-    )
-    msg.setIcon(QMessageBox.Information)
-    msg.exec()
+    # Show login dialog
+    login_dialog = LoginDialog()
+    if login_dialog.exec() != LoginDialog.Accepted:
+        logger.info('تم إلغاء تسجيل الدخول')
+        return 0
+    
+    user = login_dialog.user
+    logger.info(f'تسجيل دخول ناجح: {user.username}')
+    
+    # Show company/warehouse selector
+    selector_dialog = CompanySelectorDialog(user)
+    if selector_dialog.exec() != CompanySelectorDialog.Accepted:
+        logger.info('تم إلغاء اختيار الشركة والمخزن')
+        return 0
+    
+    company_id, warehouse_id = selector_dialog.get_selections()
+    logger.info(f'تم اختيار الشركة: {company_id}, المخزن: {warehouse_id}')
+    
+    # Create and show main window
+    main_window = MainWindow(user, company_id, warehouse_id)
+    main_window.show()
+    
+    logger.info('تم بدء تشغيل النافذة الرئيسية')
+    
+    # Run application event loop
+    return_code = app.exec()
     
     logger.info('تم إيقاف التطبيق')
-    return 0
+    return return_code
 
 
 if __name__ == '__main__':
