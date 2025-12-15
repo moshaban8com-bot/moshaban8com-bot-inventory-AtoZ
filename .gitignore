@@ -46,7 +46,6 @@ backups/
 *~
 
 # PyInstaller
-*.spec
 *.manifest
 
 # Testing
@@ -69,3 +68,7 @@ temp/
 *.xls
 !templates/*.xlsx
 !templates/*.xls
+
+# Alembic migration versions (keep structure, ignore auto-generated)
+alembic/versions/*.py
+!alembic/versions/.gitkeep
